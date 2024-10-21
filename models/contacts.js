@@ -29,7 +29,7 @@ const addContact = (newContact) => {
 
 // Funcție pentru a șterge un contact după ID
 const removeContact = (id) => {
-  let contacts = listContacts();
+  const contacts = listContacts();
   const filteredContacts = contacts.filter(contact => contact.id !== id);
   if (contacts.length === filteredContacts.length) {
     return false; // Nu s-a găsit contactul pentru a fi șters
