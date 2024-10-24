@@ -1,73 +1,98 @@
 const express = require('express');
 const router = express.Router();
-const contactsModel = require('../../models/contacts');
-const { v4: uuidv4 } = require('uuid');
+const Contact = require('../../models/contact'); // Modelul Contact
+const { updateStatusContact } = require('../../models/contacts'); // Funcția din models/contacts.js
 
-// Ruta GET pentru a obține toate contactele
-router.get('/', (req, res) => {
-  const contacts = contactsModel.listContacts();
-  res.status(200).json(contacts);
+// Ruta GET pentru toate contactele
+router.get('/', async (req, res) => {
+  try {
+    const contacts = await Contact.find(); // Găsește toate contactele
+    res.status(200).json(contacts);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 });
 
 // Ruta GET pentru a obține un contact după ID
-router.get('/:id', (req, res) => {
-  const contact = contactsModel.getById(req.params.id);
-  if (contact) {
+router.get('/:id', async (req, res) => {
+  try {
+    const contact = await Contact.findById(req.params.id); // Găsește contactul după ID
+    if (!contact) {
+      return res.status(404).json({ message: 'Contact not found' });
+    }
     res.status(200).json(contact);
-  } else {
-    res.status(404).json({ message: "Not found" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 });
 
 // Ruta POST pentru a adăuga un nou contact
-router.post('/', (req, res) => {
-  const { name, email, phone } = req.body;
+router.post('/', async (req, res) => {
+  const { name, email, phone, favorite } = req.body;
 
-  // Validare: Verifică dacă toate câmpurile sunt prezente
-  if (!name || !email || !phone) {
-    return res.status(400).json({ message: "missing required name field" });
+  try {
+    const newContact = new Contact({ name, email, phone, favorite });
+    const savedContact = await newContact.save(); // Salvează contactul în MongoDB
+    res.status(201).json(savedContact);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
   }
-
-  // Creează noul contact cu un ID unic
-  const newContact = {
-    id: uuidv4(),
-    name,
-    email,
-    phone
-  };
-
-  // Apelează funcția pentru a adăuga contactul și salvează-l în fișierul JSON
-  const addedContact = contactsModel.addContact(newContact);
-
-  // Returnează noul contact și status code 201
-  return res.status(201).json(addedContact);
 });
 
 // Ruta DELETE pentru a șterge un contact după ID
-router.delete('/:id', (req, res) => {
-  const isDeleted = contactsModel.removeContact(req.params.id);
-  if (isDeleted) {
-    res.status(200).json({ message: "contact deleted" });
-  } else {
-    res.status(404).json({ message: "Not found" });
+router.delete('/:id', async (req, res) => {
+  try {
+    const contact = await Contact.findByIdAndDelete(req.params.id); // Șterge contactul
+    if (!contact) {
+      return res.status(404).json({ message: 'Contact not found' });
+    }
+    res.status(200).json({ message: 'Contact deleted' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 });
 
 // Ruta PUT pentru a actualiza un contact după ID
-router.put('/:id', (req, res) => {
-  const { name, email, phone } = req.body;
+router.put('/:id', async (req, res) => {
+  const { name, email, phone, favorite } = req.body;
 
-  // Validare: Verifică dacă există date de actualizat
-  if (!name && !email && !phone) {
-    return res.status(400).json({ message: "missing fields" });
+  try {
+    const updatedContact = await Contact.findByIdAndUpdate(
+      req.params.id,
+      { name, email, phone, favorite },
+      { new: true, runValidators: true } // Returnează contactul actualizat
+    );
+    
+    if (!updatedContact) {
+      return res.status(404).json({ message: 'Contact not found' });
+    }
+
+    res.status(200).json(updatedContact);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+
+// Ruta PATCH pentru actualizarea câmpului `favorite`
+router.patch('/:contactId/favorite', async (req, res) => {
+  const { contactId } = req.params;
+  const { favorite } = req.body;
+
+  if (favorite === undefined) {
+    return res.status(400).json({ message: 'missing field favorite' });
   }
 
-  // Apelează funcția pentru a actualiza contactul
-  const updatedContact = contactsModel.updateContact(req.params.id, req.body);
-  if (updatedContact) {
-    res.status(200).json(updatedContact);
-  } else {
-    res.status(404).json({ message: "Not found" });
+  try {
+    const updatedContact = await updateStatusContact(contactId, favorite);
+
+    if (!updatedContact) {
+      return res.status(404).json({ message: 'Contact not found' });
+    }
+
+    res.status(200).json(updatedContact); // Returnează contactul actualizat
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 });
 
