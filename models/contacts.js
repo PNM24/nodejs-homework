@@ -1,14 +1,19 @@
-const Contact = require('./contact'); // Importă modelul Contact
+// const fs = require('fs/promises')
 
-// Funcția pentru actualizarea câmpului `favorite`
-const updateStatusContact = async (contactId, favorite) => {
-  return await Contact.findByIdAndUpdate(
-    contactId,
-    { favorite }, // Actualizează doar câmpul `favorite`
-    { new: true, runValidators: true } // Returnează contactul actualizat
-  );
-};
+const listContacts = async () => {}
+
+const getContactById = async (contactId) => {}
+
+const removeContact = async (contactId) => {}
+
+const addContact = async (body) => {}
+
+const updateContact = async (contactId, body) => {}
 
 module.exports = {
-  updateStatusContact,
-};
+  listContacts,
+  getContactById,
+  removeContact,
+  addContact,
+  updateContact,
+}
