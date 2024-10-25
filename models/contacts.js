@@ -15,6 +15,11 @@ const contactSchema = new Schema({
     type: Boolean,
     default: false,
   },
+  owner: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',  // Legătura cu modelul 'User'
+    required: true,
+  },
 });
 
 const Contact = model('Contact', contactSchema);
