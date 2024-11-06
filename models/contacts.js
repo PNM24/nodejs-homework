@@ -17,7 +17,7 @@ const contactSchema = new Schema({
   },
   owner: {
     type: Schema.Types.ObjectId,
-    ref: 'User',  // Legătura cu modelul 'User'
+    ref: 'User',
     required: true,
   },
 });
