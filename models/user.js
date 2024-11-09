@@ -22,9 +22,17 @@ const userSchema = new Schema({
   avatarURL: {
     type: String,
     default: null,
-  }
+  },
+  verify: {
+    type: Boolean,
+    default: false,
+  },
+  verificationToken: {
+    type: String,
+    default: null,  // Modificat aici
+    required: false // Adăugat această linie
+  },
 });
 
 const User = model('User', userSchema);
-
 module.exports = User;
